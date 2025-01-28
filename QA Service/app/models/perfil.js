@@ -25,14 +25,13 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Perfil.associate = function (models) {
-    Perfil.belongsToMany(models.persona, {
-      through: "persona_perfil",
+    Perfil.belongsToMany(models.inquietud, {
+      through: "inquietud_perfil",
       foreignKey: "id_perfil",
-      as: "personas",
+      as: "inquietudes",
     });
-
-    // La relación con inquietud se manejará a través de llamadas a un API externo
   };
+
 
   return Perfil;
 };

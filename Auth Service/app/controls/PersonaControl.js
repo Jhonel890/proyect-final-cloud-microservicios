@@ -15,7 +15,6 @@ class PersonaControl {
                 include: [
                     { model: cuenta, as: 'cuenta', attributes: ['correo'] },
                     { model: rol, as: 'rol', attributes: ['nombre'] },
-                    { model: perfil, as: 'perfiles', attributes: ['nombre'] },
                 ],
                 attributes: ['nombres', 'apellidos', 'direccion','descripcion', 'monedas', 'cedula', 'external_id']
             });
@@ -39,7 +38,6 @@ class PersonaControl {
                 include: [
                     { model: cuenta, as: 'cuenta', attributes: ['correo'] },
                     { model: rol, as: 'rol', attributes: ['nombre'] },
-                    { model: perfil, as: 'perfiles', attributes: ['nombre'] },
                 ],
                 attributes: ['nombres', 'apellidos', 'direccion','descripcion', 'monedas', 'cedula', 'external_id']
             });

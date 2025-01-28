@@ -22,6 +22,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "id_inquietud",
       as: "respuestas",
     });
+    
+    Inquietud.belongsToMany(models.perfil, {
+      through: "inquietud_perfil",
+      foreignKey: "id_inquietud",
+      as: "perfiles",
+    });
   };
 
   return Inquietud;

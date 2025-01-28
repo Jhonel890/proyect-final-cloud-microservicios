@@ -26,14 +26,6 @@ module.exports = (sequelize, DataTypes) => {
     persona.belongsTo(models.rol, {
       foreignKey: "id_rol",
     });
-
-    persona.belongsToMany(models.perfil, {
-      through: "persona_perfil",
-      foreignKey: "id_persona",
-      as: "perfiles",
-    });
-
-    // Las relaciones con inquietud y respuesta se manejarán a través de llamadas a un API externo
   };
 
   return persona;

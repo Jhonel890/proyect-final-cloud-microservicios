@@ -6,6 +6,7 @@ var logger = require('morgan');
 const cors = require('cors');
 const routerInquietud = require('./routes/inquietud');
 const routerRespuesta = require('./routes/respuesta');
+const routerPerfil = require('./routes/perfil');
 var app = express();
 app.use(cors({ origin: '*' })); 
 
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/inquietud', routerInquietud);
 app.use('/respuesta', routerRespuesta);
+app.use('/perfil', routerPerfil);
 
 console.log("Ruta de modelos:", path.resolve(__dirname, 'app', 'models'));
 let models = require('./app/models');

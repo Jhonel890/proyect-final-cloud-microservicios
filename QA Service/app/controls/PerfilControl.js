@@ -1,7 +1,7 @@
 'use strict';
 
-const { persona, perfil } = require('../models');
-const {perfilSchema} = require('../schemas/schemas');
+const { persona, perfil } = require('../../../Auth Service/app/models');
+const {perfilSchema} = require('../../../Auth Service/app/schemas/schemas');
 const uuid = require('uuid');
 
 class PerfilControl {

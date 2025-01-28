@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       as: 'inquietud',
     });
 
-    // La relación con persona se manejará a través de llamadas a un API externo
   };
 
   return Respuesta;

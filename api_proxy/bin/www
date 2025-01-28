@@ -5,17 +5,16 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('back-wings:server');
+var debug = require('debug')('api-proxy:server');
 var http = require('http');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3010');
+var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 console.log('port', port);
-
 /**
  * Create HTTP server.
  */
@@ -89,10 +88,3 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
-
-process.on('SIGINT', () => {
-  server.close(() => {
-    console.log('Server closed gracefully');
-    process.exit(0);
-  });
-});

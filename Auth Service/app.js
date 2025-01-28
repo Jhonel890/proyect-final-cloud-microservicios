@@ -7,7 +7,7 @@ const cors = require('cors');
 const routerCuenta = require('./routes/cuenta');
 const routerPersona = require('./routes/persona');
 const routerRol = require('./routes/rol');
-const routerPerfil = require('./routes/perfil');
+
 var app = express();
 app.use(cors({ origin: '*' })); 
 
@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/cuenta', routerCuenta);
 app.use('/persona', routerPersona);
 app.use('/rol', routerRol);
-app.use('/perfil', routerPerfil);
+
 
 console.log("Ruta de modelos:", path.resolve(__dirname, 'app', 'models'));
 let models = require('./app/models');

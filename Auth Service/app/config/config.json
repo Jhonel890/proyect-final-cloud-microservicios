@@ -1,0 +1,11 @@
+{
+    "development": {
+    "username": "root",
+    "password": "Sanduche333!",
+    "database": "auth",
+    "host": "localhost",
+    "dialect": "mysql",
+    "port": "3306",
+    "charset": "utf8"
+    }
+}

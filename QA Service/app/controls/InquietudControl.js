@@ -1,50 +1,18 @@
 'use strict';
 
-const { Model, where } = require('sequelize');
-const { inquietud, respuesta, sequelize } = require('../models');
+const { default: axios } = require('axios');
+const { inquietud, respuesta, sequelize,perfil } = require('../models');
 const { inquietudSchema } = require('../schemas/schemas');
-const uuid = require('uuid');
-
 
 class InquietudControl {
-    //obtener perfiles asociado a mi perfil guardado en inquietud desde mi otro microsrvicio
-    async obtenerPerfilPersona(external_id) {
-        try {
-            console.log("External ID Persona:", external_id);
-            const response = await fetch(`http://localhost:3007/persona/${external_id}`);
-            //console.log("Respuesta completa:", response);
-    
-            if (!response.ok) {
-                console.error("Error al obtener la persona, estado:", response.status);
-                return null;
-            }
-    
-            const body = await response.json();
-            //console.log("Cuerpo de la respuesta:", body);
-    
-            // Corrige la extracción de datos
-            return body && body.data ? body.data : null;
-            console.log("Persona encontrada:", personaA);
-        } catch (error) {
-            console.error("Error al procesar la respuesta:", error);
-            return null;
-        }
-    }
-
     async listar(req, res) {
         try {
             const lista = await inquietud.findAll({
-                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id','id_external_persona','external_id_perfil'],
+                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'],
                 include: { model: respuesta, as: 'respuestas', attributes: ['descripcion', 'external_id'] },
+                include: { model: perfil, as: 'perfiles', attributes: ['nombre', 'external_id'] },
             });
-    
-            // Obtener perfiles para cada inquietud
-            const listaConPerfiles = await Promise.all(lista.map(async (inq) => {
-                const perfiles = await this.obtenerPerfilPersona(inq.id_external_persona);
-                return { ...inq.toJSON(), perfiles };
-            }));
-    
-            res.status(200).json({ message: "Éxito", code: 200, data: listaConPerfiles });
+            res.status(200).json({ message: "Éxito", code: 200, data: lista });
         } catch (error) {
             res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
@@ -71,100 +39,49 @@ class InquietudControl {
 
     async guardar(req, res) {
         const safeBody = inquietudSchema.safeParse(req.body);
-      
-        // Validación de datos
-        if (safeBody.error) {
-          return res.status(400).json({
-            message: "Datos inválidos",
-            errors: safeBody.error.errors,
-            tag: "Validación fallida",
-            code: 400,
-          });
-        }
-      
-        const transaction = await sequelize.transaction(); // Inicia la transacción
-      
-        try {
-          const data = { ...safeBody.data };
-      
-          // Obtener persona desde el microservicio externo
-          console.log("External ID Persona:", data.external_id_persona);
-          const personaA = await this.obtenerPersona(data.external_id_persona);
-      
-          // Verifica si la persona fue encontrada
-          if (!personaA || !personaA.external_id) {
-            await transaction.rollback();
-            return res.status(404).json({
-              message: "Persona no encontrada",
-              tag: "ERROR",
-              code: 404,
-            });
-          }
-      
-          // Asignar ID de persona a la inquietud
-          data.id_external_persona = personaA.external_id;  // Asignamos el valor correctamente
-      
-          console.log("Persona encontrada:", personaA);
-      
-          // Asignar los perfiles directamente al campo 'external_id_perfil'
-          if (req.body.perfiles && Array.isArray(req.body.perfiles) && req.body.perfiles.length > 0) {
-            data.external_id_perfil = req.body.perfiles[0]; // Asumimos que el primer perfil es el que se debe asociar
-          } else {
-            await transaction.rollback();
-            return res.status(400).json({
-              message: "Perfiles no proporcionados",
-              tag: "ERROR",
-              code: 400,
-            });
-          }
-      
-          // Crear la inquietud en la base de datos
-          const nuevaInquietud = await inquietud.create(data, { transaction });
-          console.log("Inquietud creada:", nuevaInquietud);
-      
-          // Confirmar la transacción
-          await transaction.commit();
-      
-          return res.status(200).json({
-            message: "Inquietud creada con éxito",
-            data: nuevaInquietud,
-            code: 200,
-          });
-        } catch (error) {
-          // Revertir la transacción en caso de error
-          await transaction.rollback();
-          console.error("Error en guardar inquietud:", error);
-          return res.status(500).json({
-            message: "Error interno del servidor",
-            code: 500,
-            error: error.message,
-          });
-        }
-      }     
-      
 
-    async obtenerPersona(external_id) {
+        if (safeBody.error) {
+            return res.status(400).json({ message: safeBody.error, tag: "Datos incorrectos", code: 400 });
+        }
+
+        const transaction = await sequelize.transaction();
+
         try {
-            const response = await fetch(`http://localhost:3007/persona/${external_id}`);
-            //console.log("Respuesta completa:", response);
-    
-            if (!response.ok) {
-                console.error("Error al obtener la persona, estado:", response.status);
-                return null;
+            const data = { ...safeBody.data };
+
+            const personaA = await axios.get(`http://localhost:3000/auth/persona/${safeBody.data.persona}`);
+
+            if (personaA.status !== 200) {
+                await transaction.rollback();
+                return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
-    
-            const body = await response.json();
-            //console.log("Cuerpo de la respuesta:", body);
-    
-            // Corrige la extracción de datos
-            return body && body.data ? body.data : null;
+
+            data.id_persona = personaA.data.data.id;
+
+            const result = await inquietud.create(data, { transaction });
+
+
+            if (req.body.perfiles && Array.isArray(req.body.perfiles)) {
+                const perfiles = await perfil.findAll({
+                    where: {
+                        external_id: req.body.perfiles,
+                    },
+                });
+
+                if (perfiles.length) {
+                    await result.setPerfiles(perfiles, { transaction }); 
+                }
+            }
+
+            await transaction.commit();
+            return res.status(200).json({ message: "EXITO", code: 200 });
         } catch (error) {
-            console.error("Error al procesar la respuesta:", error);
-            return null;
+            await transaction.rollback();
+            return res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
     }
-    
-    
+
+
     async modificar(req, res) {
         const transaction = await sequelize.transaction(); // Inicia la transacción
 
@@ -175,7 +92,16 @@ class InquietudControl {
                 return res.status(400).json({ message: safeBody.error, tag: "Datos incorrectos", code: 400 });
             }
 
-            const data = safeBody.data;
+            const data = {...safeBody.data};
+
+            const personaA = await axios.get(`http://localhost:3000/auth/persona/${safeBody.data.persona}`);
+
+            if (personaA.status !== 200) {
+                await transaction.rollback();
+                return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
+            }
+
+            data.id_persona = personaA.data.data.id;
 
             // Buscar la inquietud existente
             const inquietudA = await inquietud.findOne({
@@ -216,29 +142,33 @@ class InquietudControl {
         try {
             const external_id = req.params.external;
     
-            // Buscar la persona por su `external_id`
-            const personaA = await persona.findOne({
-                where: { external_id },
-            });
+            // Obtener la persona
+            const personaA = await axios.get(`http://localhost:3000/auth/persona/${external_id}`);
     
-            if (!personaA) {
+            if (personaA.status !== 200) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
+            
+            console.log("Persona:", personaA.data.data.external_id);
     
             // Obtener los perfiles asociados a la persona
-            const perfiles = await personaA.getPerfiles();
+            const perfilesResponse = await axios.get(`http://localhost:3000/qa/perfil/misPerfiles/${personaA.data.data.external_id}`);
     
-            if (!perfiles.length) {
-                return res.status(404).json({ message: "ERROR", tag: "La persona no tiene perfiles asociados", code: 404 });
+            const perfiles = perfilesResponse.data.data; // Acceder a los datos de perfiles
+    
+            console.log("Perfiles:", perfiles);
+    
+            if (!Array.isArray(perfiles) || perfiles.length === 0) {
+                return res.status(404).json({ message: "ERROR", tag: "Perfiles no encontrados", code: 404 });
             }
     
+            // Consultar las inquietudes según los perfiles
             const inquietudes = await inquietud.findAll({
-                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'], // Atributos de la inquietud
                 include: [
                     {
                         model: perfil,
                         as: 'perfiles',
-                        attributes: ['nombre', 'external_id'], // Atributos del perfil
+                        attributes: ['nombre', 'external_id'],
                         where: {
                             external_id: perfiles.map((perfil) => perfil.external_id), // Filtrar por los perfiles asociados
                         },
@@ -246,11 +176,11 @@ class InquietudControl {
                     {
                         model: respuesta,
                         as: 'respuestas',
-                        attributes: ['descripcion', 'external_id'], // Atributos de la respuesta
+                        attributes: ['descripcion', 'external_id'],
                     },
                 ],
                 where: {
-                    estado: true, // Filtrar inquietudes activas
+                    estado: true,
                 },
             });
     
@@ -264,10 +194,10 @@ class InquietudControl {
     
             return res.status(200).json({ message: "Éxito", code: 200, data: inquietudesFiltradas });
         } catch (error) {
-            res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+            console.log("Error detallado:", error.message);
+            return res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
     }
-    
 }
 
 module.exports = InquietudControl;

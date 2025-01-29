@@ -8,8 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       video: { type: DataTypes.STRING(500), allowNull: true },
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
       estado: { type: DataTypes.BOOLEAN, defaultValue: true },
-      id_external_persona: { type: DataTypes.UUID, allowNull: false },  // Cambié el tipo a UUID
-      external_id_perfil: { type: DataTypes.UUID, allowNull: false },
+      id_persona : { type: DataTypes.INTEGER, allowNull: false },
     },
     {
       freezeTableName: true,

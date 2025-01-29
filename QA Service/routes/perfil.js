@@ -4,10 +4,12 @@ const PerfilControl = require('../app/controls/PerfilControl');
 
 const perfilControl = new PerfilControl();
 
-router.get('/', (req, res) => perfilControl.listar(req, res));
-router.get('/:external', (req, res) => perfilControl.obtener(req, res));
-router.post('/', (req, res) => perfilControl.guardar(req, res));
-router.put('/:external', (req, res) => perfilControl.modificar(req, res));
+router.get('/', perfilControl.listar);
+router.get('/:external', perfilControl.obtener);
+router.post('/', perfilControl.guardar);
+router.put('/:external', perfilControl.modificar);
+router.get('/misPerfiles/:external_id', perfilControl.obtenerPerfilesPorPersona);
+router.post('/asignarPerfil', perfilControl.añadirPerfilesAPersona);
 
 
 module.exports = router;

@@ -4,11 +4,11 @@ const InquietudControl = require('../app/controls/InquietudControl');
 
 const inquietudControl = new InquietudControl();
 
-router.get('/', (req, res) => inquietudControl.listar(req, res));
-router.get('/:external', (req, res) => inquietudControl.obtener(req, res));
-router.post('/', (req, res) => inquietudControl.guardar(req, res));
-router.put('/:external', (req, res) => inquietudControl.modificar(req, res));
-router.get('/persona/:external', (req, res) => inquietudControl.listarPorPersona(req, res));
+router.get('/', inquietudControl.listar);
+router.get('/:external', inquietudControl.obtener);
+router.post('/', inquietudControl.guardar);
+router.put('/:external', inquietudControl.modificar);
+router.get('/persona/:external', inquietudControl.inquietudesSegunPerfil);
 
 
 module.exports = router;

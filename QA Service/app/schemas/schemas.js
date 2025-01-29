@@ -6,7 +6,7 @@ const inquietudSchema = zod.object({
     imagen: zod.string().max(500).nullable().optional(),
     video: zod.string().max(500).nullable().optional(),
     estado: zod.boolean().optional(),
-    external_id_persona: zod.string().uuid("Debe ser un UUID válido"), // Ajustado a external_id_persona
+    persona: zod.string().uuid("Debe ser un UUID válido"),
     perfiles: zod.array(zod.string().uuid("Debe ser un UUID válido")).optional()
 });
 

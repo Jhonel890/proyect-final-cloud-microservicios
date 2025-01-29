@@ -21,13 +21,17 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Perfil.associate = function (models) {
+    Perfil.hasMany(models.persona_perfil, {
+      foreignKey: "id_perfil",
+      as: "personaPerfiles",
+    });
+
     Perfil.belongsToMany(models.inquietud, {
       through: "inquietud_perfil",
       foreignKey: "id_perfil",
       as: "inquietudes",
     });
   };
-
 
   return Perfil;
 };

@@ -3,6 +3,7 @@
 const { inquietud, respuesta, persona } = require('../models');
 const { respuestaSchema } = require('../schemas/schemas');
 const uuid = require('uuid');
+const axios = require('axios');
 
 class RespuestaControl {
     async listar(req, res) {
@@ -10,8 +11,7 @@ class RespuestaControl {
             const lista = await respuesta.findAll({
                 attributes: ['descripcion', 'imagen', 'video', 'estado', 'external_id'],
                 include: [
-                    { model: inquietud, as: 'inquietud', attributes: ['titulo', "descripcion"] },
-                    { model: persona, as: 'persona', attributes: ['nombres', 'apellidos', 'external_id'] }
+                    { model: inquietud, as: 'inquietud', attributes: ['titulo', "descripcion"] }
                 ]
             });
             res.status(200).json({ message: "Éxito", code: 200, data: lista });
@@ -28,8 +28,7 @@ class RespuestaControl {
                 },
                 attributes: ['descripcion', 'imagen', 'video', 'estado', 'external_id'],
                 include: [
-                    { model: inquietud, as: 'inquietud', attributes: ['titulo', "descripcion"] },
-                    { model: persona, as: 'persona', attributes: ['nombres', 'apellidos', 'external_id'] }
+                    { model: inquietud, as: 'inquietud', attributes: ['titulo', "descripcion"] }
                 ]
             });
             if (!result) {
@@ -59,19 +58,18 @@ class RespuestaControl {
             }
     
             // Buscar la persona
-            const personaA = await persona.findOne({ 
-                where: { external_id: personaId },
-                attributes: ['id', 'monedas', 'external_id'] // Cambiado de 'coins' a 'monedas'
-            });
+            const personaA = await axios.get(`http://localhost:3000/auth/persona/${personaId}`);
             
             if (!personaA) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
+
+            console.log("Persona:",personaA.data.data.id);
     
             // Preparar los datos para guardar
             const data = {
                 ...restoDatos,
-                id_persona: personaA.id,
+                id_persona: personaA.data.data.id,
                 id_inquietud: inquietudA.id
             };
     
@@ -84,30 +82,21 @@ class RespuestaControl {
             // Actualizar el estado de la inquietud
             const actualizarInquietud = await inquietud.update(
                 { estado: false },
-                { where: { external_id: inquietudId } }
+                { where: { id: inquietudA.id } }
             );
             if (!actualizarInquietud) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
     
-            // Incrementar las monedas de la persona
-            const monedasActuales = personaA.monedas || 0; // Cambiado de coins a monedas
-            const actualizarPersona = await persona.update(
-                { monedas: monedasActuales + 5 }, // Cambiado de coins a monedas
-                { 
-                    where: { external_id: personaId }
-                }
-            );
-            
-            if (!actualizarPersona) {
+            const actualizarPersona = await axios.post(`http://localhost:3000/auth/persona/addCoins/${personaId}`);
+    
+            if (actualizarPersona.status !== 200) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
-    
             // Respuesta final
             return res.status(201).json({ 
-                message: "ÉXITO", 
-                code: 201,
-                monedasActualizadas: monedasActuales + 5
+                message: "ÉXITO",   
+                code: 201
             });
     
         } catch (error) {

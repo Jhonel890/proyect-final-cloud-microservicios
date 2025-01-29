@@ -12,11 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       external_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
-      },
-      id_inquietud: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
+      }
     },
     {
       freezeTableName: true,

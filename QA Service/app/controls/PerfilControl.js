@@ -1,6 +1,6 @@
 'use strict';
 
-const { persona, perfil } = require('../../../Auth Service/app/models');
+const { perfil } = require('../models');
 const {perfilSchema} = require('../../../Auth Service/app/schemas/schemas');
 const uuid = require('uuid');
 
@@ -21,8 +21,7 @@ class PerfilControl {
                 where: {
                     external_id: req.params.external
                 },
-                attributes: ['nombre', 'external_id'],
-                include: {model: persona, as: 'personas', attributes: ['nombres', 'apellidos', 'external_id']}
+                attributes: ['nombre', 'external_id']
             });
             if (!result) {
                 res.status(404).json({ message: "ERROR", tag: "No encontrado", code: 404 });

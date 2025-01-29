@@ -1,1 +1,5 @@
 /api_proxy/node_modules
+
+/QA Service/node_modules
+
+/Auth Service/node_modules

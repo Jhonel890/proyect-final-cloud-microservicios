@@ -1,0 +1,12 @@
+{
+    "development": {
+    "username": "jhone",
+    "password": "Sanduche333!",
+    "database": "QA",
+    "host": "localhost",
+    "dialect": "mysql",
+    "port": "3307",
+    "charset": "utf8"
+    }
+
+}

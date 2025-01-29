@@ -1,4 +1,4 @@
-const { createProxyMiddleware } = require("http-proxy-middleware");
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -6,9 +6,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var app = express();
 var cors = require('cors');
+const axios = require('axios');
 
 var indexRouter = require('./routes/index');
-
 app.use(cors({ origin: '*' }));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,29 +22,33 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
-app.use(
-  "/auth",
-  createProxyMiddleware({
-    target: "http://localhost:3010/",
-    changeOrigin: true,
-    logLevel: "debug",
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying request: ${req.method} ${req.url}`);
-    },
-    onError: (err, req, res) => {
-      console.error("Error en el proxy:", err);
-      res.status(500).send("Error en el proxy");
-    },
-  })
-);
+app.use('/auth', async (req,res)=>{
+  try{
+    const response = await axios({
+      method: req.method,
+      url: 'http://localhost:3010'+req.url,
+      data: req.body
+    });
+    res.status(response.status).json(response.data);
+  } catch(error){
+    res.status(error.response.status).json(error.response.data);
+  }
+})
 
-app.use(
-  "/qa",
-  createProxyMiddleware({
-    target: "http://localhost:3020/",
-    changeOrigin: true,
-  })
-);
+app.use('/qa', async (req,res)=>{
+  try{
+    const response = await axios({
+      method: req.method,
+      url: 'http://localhost:3020'+req.url,
+      data: req.body
+    });
+    res.status(response.status).json(response.data);
+  } catch(error){
+    res.status(error.response.status).json(error.response.data);
+  }
+})
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -20,7 +20,13 @@ const respuestaSchema = zod.object({
     persona: zod.string().uuid()
 });
 
+const perfilSchema = zod.object({
+    nombre: zod.string().max(45),
+});
+
+
 module.exports = {
     inquietudSchema,
     respuestaSchema,
+    perfilSchema
 };

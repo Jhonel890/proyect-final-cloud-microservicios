@@ -227,7 +227,7 @@ class PersonaControl {
             }
     
             const requests = perfilesUUID.map(uuid =>
-                axios.post('https://qa-service-proyecto.azurewebsites.net/qa/perfil/asignarPerfil', {
+                axios.post('https://api-proxy-proyecto.azurewebsites.net/qa/perfil/asignarPerfil', {
                     id_persona: personaA.id,
                     perfil_uuid: uuid
                 }).catch(error => {

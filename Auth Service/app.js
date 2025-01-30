@@ -24,7 +24,7 @@ app.use('/rol', routerRol);
 
 console.log("Ruta de modelos:", path.resolve(__dirname, 'app', 'models'));
 let models = require('./app/models');
-models.sequelize.sync({ force: false, logging: false }).then(() => {
+models.sequelize.sync({ force: true, logging: false }).then(() => {
   console.log("Se ha sincronizado la base de datos");
 }).catch(err => {
   console.log(err, 'Hubo un error al sincronizar la base de datos');

@@ -49,7 +49,7 @@ class InquietudControl {
         try {
             const data = { ...safeBody.data };
 
-            const personaA = await axios.get(`http://localhost:3000/auth/persona/${safeBody.data.persona}`);
+            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${safeBody.data.persona}`);
 
             if (personaA.status !== 200) {
                 await transaction.rollback();
@@ -94,7 +94,7 @@ class InquietudControl {
 
             const data = {...safeBody.data};
 
-            const personaA = await axios.get(`http://localhost:3000/auth/persona/${safeBody.data.persona}`);
+            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${safeBody.data.persona}`);
 
             if (personaA.status !== 200) {
                 await transaction.rollback();
@@ -143,7 +143,7 @@ class InquietudControl {
             const external_id = req.params.external;
     
             // Obtener la persona
-            const personaA = await axios.get(`http://localhost:3000/auth/persona/${external_id}`);
+            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${external_id}`);
     
             if (personaA.status !== 200) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -152,7 +152,7 @@ class InquietudControl {
             console.log("Persona:", personaA.data.data.external_id);
     
             // Obtener los perfiles asociados a la persona
-            const perfilesResponse = await axios.get(`http://localhost:3000/qa/perfil/misPerfiles/${personaA.data.data.external_id}`);
+            const perfilesResponse = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/qa/perfil/misPerfiles/${personaA.data.data.external_id}`);
     
             const perfiles = perfilesResponse.data.data; // Acceder a los datos de perfiles
     

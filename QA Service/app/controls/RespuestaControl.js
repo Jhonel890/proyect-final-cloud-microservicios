@@ -58,7 +58,7 @@ class RespuestaControl {
             }
     
             // Buscar la persona
-            const personaA = await axios.get(`http://localhost:3000/auth/persona/${personaId}`);
+            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${personaId}`);
             
             if (!personaA) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -88,7 +88,7 @@ class RespuestaControl {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
     
-            const actualizarPersona = await axios.post(`http://localhost:3000/auth/persona/addCoins/${personaId}`);
+            const actualizarPersona = await axios.post(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/addCoins/${personaId}`);
     
             if (actualizarPersona.status !== 200) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
@@ -140,20 +140,17 @@ class RespuestaControl {
         try {
             const id_persona = req.params.persona;
 
-            const personaA = await persona.findOne({
-                where: { external_id: id_persona },
-            });
+            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${id_persona}`);
 
             if (!personaA) {
                 res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
 
             const lista = await inquietud.findAll({
-                where: { id_persona: personaA.id },
+                where: { id_persona: personaA.data.data.id },
                 attributes: ['titulo','descripcion', 'imagen', 'video', 'estado', 'external_id'],
                 include: [
-                    { model: respuesta, as: 'respuestas', attributes: ["descripcion"] },
-                    { model: persona, as: 'persona', attributes: ['nombres', 'apellidos', 'external_id'] }
+                    { model: respuesta, as: 'respuestas', attributes: ["descripcion"] }
                 ]
             });
 
@@ -167,6 +164,7 @@ class RespuestaControl {
             res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
     }
+
 }
 
 module.exports = RespuestaControl;

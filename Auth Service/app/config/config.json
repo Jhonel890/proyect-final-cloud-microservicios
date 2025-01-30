@@ -1,11 +1,15 @@
 {
     "development": {
-    "username": "jhone",
-    "password": "Sanduche333!",
-    "database": "auth",
-    "host": "localhost",
-    "dialect": "mysql",
-    "port": "3307",
-    "charset": "utf8"
+        "username": "avnadmin",
+        "password": "AVNS_UthH-rDErxsJvbLudmt",  
+        "database": "auth",
+        "host": "auth-jhonel-9a28.d.aivencloud.com",
+        "dialect": "mysql",
+        "port": "28074",
+        "charset": "utf8",
+        "ssl": {
+            "require": true,
+            "rejectUnauthorized": false
+        }
     }
 }

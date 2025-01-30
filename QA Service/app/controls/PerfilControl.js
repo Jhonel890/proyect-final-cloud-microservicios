@@ -1,7 +1,7 @@
 'use strict';
 
 const { perfil, persona_perfil } = require('../models');
-const {perfilSchema} = require('../../../Auth Service/app/schemas/schemas');
+const { perfilSchema } = require('../schemas/schemas');
 const uuid = require('uuid');
 const { default: axios } = require('axios');
 
@@ -37,7 +37,7 @@ class PerfilControl {
     async obtenerPerfilesPorPersona(req, res) {
         try {
             const external_id = req.params.external_id;
-            const persona = await axios.get(`http://localhost:3000/auth/persona/${external_id}`);
+            const persona = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${external_id}`);
             
             if (persona.status !== 200) {
                 res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -75,7 +75,7 @@ class PerfilControl {
             }
     
             // Verificar si la persona existe
-            const personaExiste = await axios.get(`http://localhost:3000/auth/persona/getbyID/${id_persona}`);
+            const personaExiste = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/getbyID/${id_persona}`);
             if (personaExiste.status !== 200) {
                 throw new Error(`Persona con UUID ${id_persona} no encontrada`);
             }

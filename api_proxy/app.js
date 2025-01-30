@@ -26,7 +26,7 @@ app.use('/auth', async (req,res)=>{
   try{
     const response = await axios({
       method: req.method,
-      url: 'http://localhost:3010'+req.url,
+      url: 'https://auth-services-proyecto.azurewebsites.net'+req.url,
       data: req.body
     });
     res.status(response.status).json(response.data);
@@ -39,7 +39,7 @@ app.use('/qa', async (req,res)=>{
   try{
     const response = await axios({
       method: req.method,
-      url: 'http://localhost:3020'+req.url,
+      url: 'https://qa-service-proyecto.azurewebsites.net'+req.url,
       data: req.body
     });
     res.status(response.status).json(response.data);

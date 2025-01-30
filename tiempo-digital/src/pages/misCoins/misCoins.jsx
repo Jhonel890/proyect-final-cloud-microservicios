@@ -22,8 +22,6 @@ const MisMonedas = () => {
           <div style={styles.cardContent}>
             <p style={styles.cardDescription}>Tienes {monedas} monedas</p>
             <div style={styles.buttonContainer}>
-              <button style={styles.outlineButton}>Ver detalles</button>
-              <button style={styles.primaryButton}>Comprar más monedas</button>
             </div>
           </div>
         </div>

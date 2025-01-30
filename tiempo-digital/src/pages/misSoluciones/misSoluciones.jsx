@@ -12,7 +12,7 @@ const Soluciones = () => {
         <h1 style={styles.sectionTitle}>Soluciones a mis preguntas</h1>
         <button style={styles.backButton} onClick={() => navigate('/principal')}>
           Volver a Principal
-        </button> 
+        </button>
       </div>
       {/* mostrar en consola mi titulo de la pregunta*/}
       {console.log(soluciones)}
@@ -24,12 +24,14 @@ const Soluciones = () => {
           <div key={index} style={styles.card}>
             <div style={styles.cardContent}>
               <p style={styles.cardTitle}>{solucion.titulo}</p>
-              <p style={styles.cardDescription}>{solucion.descripcion}</p>
-              <h1>Respuestas</h1>
-              <p style={styles.cardDescription}>{solucion.respuestas.descripcion}</p>
-              <div style={styles.buttonContainer}>
-                <button style={styles.outlineButton}>Ver detalles</button>
-                <button style={styles.primaryButton}>Ver solución completa</button>
+              <p style={styles.cardDescription}>{solucion.descripcion}</p>              {solucion.respuestas && solucion.respuestas.length > 0 && (
+                <div>
+                  <h4>Respuestas:</h4>
+                  {solucion.respuestas.map((respuesta, index) => (
+                    <p key={index} style={styles.cardResponse}>{respuesta.descripcion}</p>
+                  ))}
+                </div>
+              )}              <div style={styles.buttonContainer}>
               </div>
             </div>
           </div>

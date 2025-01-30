@@ -254,7 +254,7 @@ class PersonaControl {
                 return res.status(404).json({ message: "Recurso no encontrado", code: 404 });
             }
 
-            const response = await axios.get(`https://qa-service-proyecto.azurewebsites.net/qa/perfil/misPerfiles/${external}`);
+            const response = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/qa/perfil/misPerfiles/${external}`);
             const status = response.data.data.length > 0;
             res.status(200).json({ message: status ? "Perfil completo" : "Perfil incompleto", status, code: 200 });
         } catch (error) {

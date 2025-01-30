@@ -25,6 +25,8 @@ const Soluciones = () => {
             <div style={styles.cardContent}>
               <p style={styles.cardTitle}>{solucion.titulo}</p>
               <p style={styles.cardDescription}>{solucion.descripcion}</p>
+              <h1>Respuestas</h1>
+              <p style={styles.cardDescription}>{solucion.respuestas.descripcion}</p>
               <div style={styles.buttonContainer}>
                 <button style={styles.outlineButton}>Ver detalles</button>
                 <button style={styles.primaryButton}>Ver solución completa</button>

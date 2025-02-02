@@ -11,4 +11,12 @@ export const getPreguntas = async (personaId) => {
     const data = await response.json();
     return data;
   };
+
+  export const getPreguntasList = async () => {
+    const response = await fetch(API_URL +`/qa/inquietud`);
+    console.log(response);
+    
+    const data = await response.json();
+    return data;
+  };
   

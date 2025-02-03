@@ -1,4 +1,4 @@
-
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,6 +7,8 @@ var logger = require('morgan');
 var app = express();
 var cors = require('cors');
 const axios = require('axios');
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
+const QA_SERVICE_URL = process.env.QA_SERVICE_URL;
 
 var indexRouter = require('./routes/index');
 app.use(cors({ origin: '*' }));
@@ -24,9 +26,9 @@ app.use('/', indexRouter);
 
 app.use('/auth', async (req,res)=>{
   try{
-    const response = await axios({
+    const response = await axios({      
       method: req.method,
-      url: 'https://auth-services-proyecto.azurewebsites.net'+req.url,
+      url: AUTH_SERVICE_URL+req.url,
       data: req.body
     });
     res.status(response.status).json(response.data);
@@ -39,7 +41,7 @@ app.use('/qa', async (req,res)=>{
   try{
     const response = await axios({
       method: req.method,
-      url: 'https://qa-service-proyecto.azurewebsites.net'+req.url,
+      url: QA_SERVICE_URL+req.url,
       data: req.body
     });
     res.status(response.status).json(response.data);

@@ -1,8 +1,11 @@
 'use strict';
 
 const { default: axios } = require('axios');
-const { inquietud, respuesta, sequelize,perfil } = require('../models');
+const { inquietud, respuesta, sequelize, perfil } = require('../models');
 const { inquietudSchema } = require('../schemas/schemas');
+require('dotenv').config();
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
+const QA_SERVICE_URL = process.env.QA_SERVICE_URL;
 
 class InquietudControl {
     async listar(req, res) {
@@ -49,7 +52,7 @@ class InquietudControl {
         try {
             const data = { ...safeBody.data };
 
-            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${safeBody.data.persona}`);
+            const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${safeBody.data.persona}`);
 
             if (personaA.status !== 200) {
                 await transaction.rollback();
@@ -94,7 +97,7 @@ class InquietudControl {
 
             const data = {...safeBody.data};
 
-            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${safeBody.data.persona}`);
+            const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${safeBody.data.persona}`);
 
             if (personaA.status !== 200) {
                 await transaction.rollback();
@@ -143,8 +146,8 @@ class InquietudControl {
             const external_id = req.params.external;
     
             // Obtener la persona
-            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${external_id}`);
-    
+            const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${external_id}`);
+
             if (personaA.status !== 200) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
@@ -152,16 +155,16 @@ class InquietudControl {
             console.log("Persona:", personaA.data.data.external_id);
     
             // Obtener los perfiles asociados a la persona
-            const perfilesResponse = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/qa/perfil/misPerfiles/${personaA.data.data.external_id}`);
-    
+            const perfilesResponse = await axios.get(QA_SERVICE_URL + `/perfil/misPerfiles/${personaA.data.data.external_id}`);
+
             const perfiles = perfilesResponse.data.data; // Acceder a los datos de perfiles
-    
+
             console.log("Perfiles:", perfiles);
-    
+
             if (!Array.isArray(perfiles) || perfiles.length === 0) {
                 return res.status(404).json({ message: "ERROR", tag: "Perfiles no encontrados", code: 404 });
             }
-    
+
             // Consultar las inquietudes según los perfiles
             const inquietudes = await inquietud.findAll({
                 include: [
@@ -183,15 +186,23 @@ class InquietudControl {
                     estado: true,
                 },
             });
-    
+
             if (!inquietudes.length) {
                 return res.status(404).json({ message: "No hay inquietudes para los perfiles de la persona", code: 404 });
             }
-    
-            const inquietudesFiltradas = inquietudes.filter((inquietud) =>
-                inquietud.perfiles.length === 1 && perfiles.some((perfil) => perfil.external_id === inquietud.perfiles[0].external_id)
-            );
-    
+
+            // const inquietudesFiltradas = inquietudes.filter((inquietud) =>
+            //     inquietud.perfiles.length === 1 && perfiles.some((perfil) => perfil.external_id === inquietud.perfiles[0].external_id)
+            // );
+
+            // Filtrar inquietudes que tienen al menos un perfil que coincide con los perfiles de la persona
+            const inquietudesFiltradas = inquietudes.filter((inquietud) => {
+                // Verifica si al menos uno de los perfiles asociados a la inquietud coincide con los perfiles de la persona
+                return inquietud.perfiles.some((perfilInquietud) =>
+                    perfiles.some((perfilPersona) => perfilPersona.external_id === perfilInquietud.external_id)
+                );
+            });
+
             return res.status(200).json({ message: "Éxito", code: 200, data: inquietudesFiltradas });
         } catch (error) {
             console.log("Error detallado:", error.message);

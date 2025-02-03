@@ -1,7 +1,41 @@
-/api_proxy/node_modules
+# /api_proxy/node_modules/
 
-/QA Service/node_modules
+# /QA Service/node_modules/
 
-/Auth Service/node_modules
+# /Auth Service/node_modules/
 
-/tiempo_digital/node_modules
+# /tiempo_digital/node_modules/
+
+# /movil-tiempoD/node_modules/
+
+# Ignorar node_modules en todo el proyecto
+node_modules/
+**/node_modules/
+
+# Ignorar archivos de entorno
+.env
+**/.env
+.env.local
+.env.production
+
+# Caché y builds de backend (Express)
+dist/
+build/
+.cache/
+
+# Caché y builds de frontend (React)
+.next/
+out/
+.cache/
+build/
+dist/
+
+# Caché y builds de Expo/React Native
+.expo/
+.expo-shared/
+android/.gradle/
+android/app/build/
+android/build/
+ios/Pods/
+ios/build/
+expo-env.d.ts

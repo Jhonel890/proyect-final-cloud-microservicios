@@ -1,11 +1,11 @@
 {
     "development": {
-        "username": "avnadmin",
-        "password": "AVNS_UthH-rDErxsJvbLudmt",
+        "username": "root",
+        "password": "Leomysql25",
         "database": "QA",
-        "host": "auth-jhonel-9a28.d.aivencloud.com",
+        "host": "127.0.0.1",
         "dialect": "mysql",
-        "port": "28074",
+        "port": "3306",
         "charset": "utf8",
         "ssl": {
             "require": true,

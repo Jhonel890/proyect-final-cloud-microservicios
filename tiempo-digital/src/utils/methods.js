@@ -1,4 +1,5 @@
-export const URL_API = "https://api-proxy-proyecto.azurewebsites.net";
+// export const URL_API = "https://api-proxy-proyecto.azurewebsites.net";
+export const URL_API = "http://localhost:3000";
 
 export async function GET(url, token){
     return fetch(URL_API+url, {

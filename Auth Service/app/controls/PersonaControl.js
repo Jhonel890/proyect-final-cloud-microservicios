@@ -365,6 +365,38 @@ class PersonaControl {
         }
     }
 
+    async bajar5Coins(req, res) {
+        const external = req.params.external;
+
+        try {
+            const personaA = await persona.findOne({
+                where: { external_id: external },
+                attributes: ['monedas'],
+            });
+
+            if (!personaA) {
+                res.status(404);
+                return res.json({ message: "Recurso no encontrado", code: 404, data: {} });
+            }
+
+            const updatedPersona = await persona.update(
+                { monedas: personaA.monedas - 5 },
+                { where: { external_id: external } }
+            );
+
+            if (!updatedPersona[0]) {
+                res.status(401);
+                return res.json({ message: "Error de autenticación", tag: "No se puede modificar", code: 401 });
+            }
+
+            res.status(200);
+            res.json({ message: "Éxito", code: 200 });
+        } catch (error) {
+            res.status(500);
+            res.json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
 }
 
 module.exports = PersonaControl;

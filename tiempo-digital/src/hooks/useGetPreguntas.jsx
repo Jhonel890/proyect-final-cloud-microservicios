@@ -9,7 +9,8 @@ export default function useGetPreguntas(refetchTrigger) {
         const fetchPreguntas = async () => {
             try {
                 const external_id = getExternalID();
-                const response = await GET(`/qa/inquietud/persona/${external_id}`);
+                // const response = await GET(`/qa/inquietud/persona/${external_id}`);
+                const response = await GET(`/qa/inquietud/respondidas`);
                 console.log("useGetPreguntas", response);
                 setPreguntas(response.data);
             } catch (error) {

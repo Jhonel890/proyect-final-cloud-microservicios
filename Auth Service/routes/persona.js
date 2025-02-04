@@ -14,5 +14,6 @@ router.get('/misCoins/:external', personaControl.misCoins);
 router.put('/modificarPerfiles/:external', personaControl.cambiarPerfiles);
 router.get('/getbyID/:id', personaControl.obtenerPorID);
 router.post('/addCoins/:external', personaControl.subir5Coins);
+router.put('/subCoins/:external', personaControl.bajar5Coins);
 
 module.exports = router;

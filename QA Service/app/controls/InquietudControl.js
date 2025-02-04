@@ -1,7 +1,7 @@
 'use strict';
 
 const { default: axios } = require('axios');
-const { inquietud, respuesta, sequelize, perfil } = require('../models');
+const { inquietud, respuesta, sequelize, perfil, cuenta_inquietud } = require('../models');
 const { inquietudSchema } = require('../schemas/schemas');
 require('dotenv').config();
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
@@ -20,6 +20,81 @@ class InquietudControl {
             res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
     }
+
+    async listarRespondidas(req, res) {
+        try {
+            const lista = await inquietud.findAll({
+                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'],
+                include: { model: respuesta, as: 'respuestas', attributes: ['descripcion', 'external_id'] },
+                include: { model: perfil, as: 'perfiles', attributes: ['nombre', 'external_id'] },
+            });
+
+            const inquietudesRespondidas = lista.filter((inquietud) => inquietud.estado === false);
+
+            res.status(200).json({ message: "Éxito", code: 200, data: inquietudesRespondidas });
+        } catch (error) {
+            res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
+    async listarDesbloqueadas(req, res) {
+        const external_id = req.params.external_persona;        
+
+        try {
+            const cuentaAResponse = await axios.get(AUTH_SERVICE_URL + `/persona/${external_id}`);
+            const cuentaA = cuentaAResponse.data.data;
+
+            if (!cuentaA) {
+                return res.status(404).json({ message: "ERROR", tag: "Cuenta no encontrada", code: 404 });
+            }
+
+            const relaciones = await cuenta_inquietud.findOne({
+                where: { id_cuenta: cuentaA.external_id },
+                attributes: ['id_inquietudes'],
+            });
+
+            if (!relaciones) {
+                return res.status(200).json({ message: "No tienes preguntas desbloqueadas", code: 200, data: [] });
+            }
+
+            const idsInquietudes = JSON.parse(relaciones.id_inquietudes);
+
+            if (!Array.isArray(idsInquietudes)) {
+                return res.status(500).json({ message: "Formato de id_inquietudes incorrecto", code: 500 });
+            }
+
+            const inquietudes = await inquietud.findAll({
+                where: { external_id: idsInquietudes },
+                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id', 'updatedAt'],
+                include: [
+                    { model: respuesta, as: 'respuestas', attributes: ['descripcion', 'external_id'] },
+                    { model: perfil, as: 'perfiles', attributes: ['nombre', 'external_id'] },
+                ],
+                order: [['createdAt', 'DESC']],
+            });
+
+            res.status(200).json({ message: "Éxito", code: 200, data: inquietudes });
+        } catch (error) {
+            res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
+    // async listarDesbloqueadas(req, res) {
+    //     const external_id = req.params.external_cuenta
+    //     try {
+    //         const lista = await inquietud.findAll({
+    //             attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'],
+    //             include: { model: respuesta, as: 'respuestas', attributes: ['descripcion', 'external_id'] },
+    //             include: { model: perfil, as: 'perfiles', attributes: ['nombre', 'external_id'] },
+    //         });
+
+    //         const inquietudesRespondidas = lista.filter((inquietud) => inquietud.estado === false);
+
+    //         res.status(200).json({ message: "Éxito", code: 200, data: inquietudesRespondidas });
+    //     } catch (error) {
+    //         res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+    //     }
+    // }
 
     async obtener(req, res) {
         try {
@@ -72,7 +147,7 @@ class InquietudControl {
                 });
 
                 if (perfiles.length) {
-                    await result.setPerfiles(perfiles, { transaction }); 
+                    await result.setPerfiles(perfiles, { transaction });
                 }
             }
 
@@ -80,6 +155,48 @@ class InquietudControl {
             return res.status(200).json({ message: "EXITO", code: 200 });
         } catch (error) {
             await transaction.rollback();
+            return res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
+    async desbloquear(req, res) {
+        try {
+            const inquietudA = await inquietud.findOne({
+                where: { external_id: req.body.external_id_pregunta },
+            });
+
+            if (!inquietudA) {
+                return res.status(404).json({ message: "ERROR", tag: "Inquietud no encontrada", code: 404 });
+            }
+
+            const cuentaResponse = await axios.get(AUTH_SERVICE_URL + `/persona/${req.body.external_id_persona}`);
+            const cuentaA = cuentaResponse.data.data;
+
+            if (!cuentaA) {
+                return res.status(404).json({ message: "ERROR", tag: "Cuenta no encontrada", code: 404 });
+            }
+
+            let relacion = await cuenta_inquietud.findOne({
+                where: { id_cuenta: cuentaA.external_id },
+            });
+
+            if (relacion) {
+                const inquietudesDesbloqueadas = relacion.id_inquietudes || [];
+                if (inquietudesDesbloqueadas.includes(inquietudA.external_id)) {
+                    return res.status(200).json({ message: "Ya desbloqueaste esta pregunta", code: 200 });
+                }
+
+                inquietudesDesbloqueadas.push(inquietudA.external_id);
+                await relacion.update({ id_inquietudes: inquietudesDesbloqueadas });
+            } else {
+                await cuenta_inquietud.create({
+                    id_cuenta: cuentaA.external_id,
+                    id_inquietudes: JSON.stringify([inquietudA.external_id]),
+                });
+            }
+
+            return res.status(200).json({ message: "EXITO", code: 200 });
+        } catch (error) {
             return res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
     }
@@ -95,7 +212,7 @@ class InquietudControl {
                 return res.status(400).json({ message: safeBody.error, tag: "Datos incorrectos", code: 400 });
             }
 
-            const data = {...safeBody.data};
+            const data = { ...safeBody.data };
 
             const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${safeBody.data.persona}`);
 
@@ -144,16 +261,16 @@ class InquietudControl {
     async inquietudesSegunPerfil(req, res) {
         try {
             const external_id = req.params.external;
-    
+
             // Obtener la persona
             const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${external_id}`);
 
             if (personaA.status !== 200) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
-            
+
             console.log("Persona:", personaA.data.data.external_id);
-    
+
             // Obtener los perfiles asociados a la persona
             const perfilesResponse = await axios.get(QA_SERVICE_URL + `/perfil/misPerfiles/${personaA.data.data.external_id}`);
 

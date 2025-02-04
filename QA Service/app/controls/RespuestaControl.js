@@ -4,6 +4,7 @@ const { inquietud, respuesta, persona } = require('../models');
 const { respuestaSchema } = require('../schemas/schemas');
 const uuid = require('uuid');
 const axios = require('axios');
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
 
 class RespuestaControl {
     async listar(req, res) {
@@ -58,7 +59,7 @@ class RespuestaControl {
             }
     
             // Buscar la persona
-            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${personaId}`);
+            const personaA = await axios.get(AUTH_SERVICE_URL+`/persona/${personaId}`);
             
             if (!personaA) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -88,7 +89,7 @@ class RespuestaControl {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
     
-            const actualizarPersona = await axios.post(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/addCoins/${personaId}`);
+            const actualizarPersona = await axios.post(AUTH_SERVICE_URL+`/persona/addCoins/${personaId}`);
     
             if (actualizarPersona.status !== 200) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
@@ -140,7 +141,7 @@ class RespuestaControl {
         try {
             const id_persona = req.params.persona;
 
-            const personaA = await axios.get(`https://api-proxy-proyecto.azurewebsites.net/auth/persona/${id_persona}`);
+            const personaA = await axios.get(AUTH_SERVICE_URL+`/persona/${id_persona}`);
 
             if (!personaA) {
                 res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });

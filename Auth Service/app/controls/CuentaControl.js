@@ -1,6 +1,7 @@
 'use strict';
 const models = require('../models');
 const Cuenta = models.cuenta;
+const Persona = models.persona;
 const jwt = require('jsonwebtoken');
 
 class CuentaControl {
@@ -13,6 +14,18 @@ class CuentaControl {
                 attributes: ['correo', 'clave', 'estado', 'external_id']
             });
             res.status(200).json({ message: "Éxito", code: 200, data: lista });
+        } catch (error) {
+            res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
+    async obtener(req, res) {
+        try {
+            const persona = await Persona.findOne({
+                where: { external_id: req.params.external },
+            });
+            
+            res.status(200).json({ message: "Éxito", code: 200, data: persona });
         } catch (error) {
             res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }

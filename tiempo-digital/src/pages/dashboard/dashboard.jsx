@@ -35,7 +35,7 @@ const Dashboard = () => {
       setDesbloqueadas(data);
     }
     FetchDesbloqueadas();
-    console.log(desbloqueadas);
+    // console.log("desbloqueadas", desbloqueadas);
   }, []);
 
   useEffect((() => {
@@ -75,8 +75,8 @@ const Dashboard = () => {
     const response = await usePostDesbloquearInquietud(data);
     const responseMonedas = await usePutModificarMonedas();
 
-    console.log("response", response);
-    console.log("responseMonedas", responseMonedas);
+    // console.log("response", response);
+    // console.log("responseMonedas", responseMonedas);
 
     if (response.code !== 200) {
       Alerta({
@@ -194,7 +194,28 @@ const Dashboard = () => {
           <>
             <h2 style={styles.subTitle}>Preguntas Bloqueadas</h2>
             <div style={styles.gridContainer}>
-              {preguntas.map((pregunta, index) => (
+              {preguntas
+                .filter(
+                  (pregunta) =>
+                    !desbloqueadas.some(
+                      (desbloqueada) => desbloqueada.external_id === pregunta.external_id
+                    )
+                )
+                .map((pregunta, index) => (
+                  <div key={index} style={styles.card}>
+                    <div style={styles.cardContent}>
+                      <h2 style={styles.cardTitle}>{pregunta.titulo}</h2>
+                      <p style={styles.cardDescription}>{pregunta.descripcion}</p>
+                      <button
+                        onClick={() => handleDesbloquearClick(pregunta)}
+                        style={styles.primaryButton}
+                      >
+                        Desbloquear
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              {/* {preguntas.map((pregunta, index) => (
                 <div key={index} style={styles.card}>
                   <div style={styles.cardContent}>
                     <h2 style={styles.cardTitle}>{pregunta.titulo}</h2>
@@ -207,7 +228,7 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
           </>
         )}

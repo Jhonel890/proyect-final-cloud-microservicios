@@ -45,6 +45,7 @@ export function useGetPregunta(external_id) {
             fetchPregunta();
         }
     }, [external_id]); // Agregamos el array de dependencias
-
+    console.log(pregunta);
+    
     return { pregunta, isLoading };
 }

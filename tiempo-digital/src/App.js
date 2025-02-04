@@ -9,7 +9,7 @@ import MisCoins from './pages/misCoins/misCoins';
 import CrearPregunta from './pages/crearPregunta/crearPregunta';
 import Perfil from './pages/perfil/perfil';
 import ResponderPregunta from './pages/responderPregunta/responderPregunta';
-import MasDetalles from './pages/masDetalles/masDetalles';
+import MasDetalles from './pages/masDetalles/[external_id]/masDetalles';
 const App = () => {
   return (
     <Router>

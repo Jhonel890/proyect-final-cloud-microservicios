@@ -5,6 +5,7 @@ const { respuestaSchema } = require('../schemas/schemas');
 const uuid = require('uuid');
 const axios = require('axios');
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
+const QA_SERVICE_URL = process.env.QA_SERVICE_URL;
 
 class RespuestaControl {
     async listar(req, res) {
@@ -43,63 +44,72 @@ class RespuestaControl {
     }
 
     async guardar(req, res) {
+        console.log(req.body);
+
         try {
             // Validar el cuerpo de la solicitud
             const safeBody = respuestaSchema.safeParse(req.body);
             if (safeBody.error) {
                 return res.status(400).json({ message: safeBody.error, tag: "Datos incorrectos", code: 400 });
             }
-    
-            const { inquietud: inquietudId, persona: personaId, ...restoDatos } = safeBody.data;
-    
+
+            const { inquietudId, persona, ...restoDatos } = safeBody.data;
+
             // Buscar la inquietud
             const inquietudA = await inquietud.findOne({ where: { external_id: inquietudId } });
             if (!inquietudA) {
                 return res.status(404).json({ message: "ERROR", tag: "Inquietud no encontrada", code: 404 });
             }
-    
+
             // Buscar la persona
-            const personaA = await axios.get(AUTH_SERVICE_URL+`/persona/${personaId}`);
-            
+            const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${persona}`);
+
             if (!personaA) {
                 return res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
             }
 
-            console.log("Persona:",personaA.data.data.id);
-    
             // Preparar los datos para guardar
             const data = {
                 ...restoDatos,
-                id_persona: personaA.data.data.id,
-                id_inquietud: inquietudA.id
+                external_persona: personaA.data.data.external_id,
+                id_inquietud: inquietudA.dataValues.external_id
             };
-    
+
             // Crear la respuesta
             const nuevaRespuesta = await respuesta.create(data);
             if (!nuevaRespuesta) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede crear", code: 401 });
             }
-    
+
             // Actualizar el estado de la inquietud
             const actualizarInquietud = await inquietud.update(
                 { estado: false },
-                { where: { id: inquietudA.id } }
+                { where: { external_id: inquietudA.dataValues.external_id } }
             );
             if (!actualizarInquietud) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
-    
-            const actualizarPersona = await axios.post(AUTH_SERVICE_URL+`/persona/addCoins/${personaId}`);
-    
+
+            const actualizarPersona = await axios.post(AUTH_SERVICE_URL + `/persona/addCoins/${personaA.data.data.external_id}`);
             if (actualizarPersona.status !== 200) {
                 return res.status(401).json({ message: "ERROR", tag: "No se puede modificar", code: 401 });
             }
+
+            const desbloquearPregunta = await axios.post(QA_SERVICE_URL + `/inquietud/desbloquear`,
+                {
+                    external_id_pregunta: inquietudA.dataValues.external_id,
+                    external_id_persona: personaA.data.data.external_id
+                });
+            if (desbloquearPregunta.status !== 200) {
+                return res.status(401).json({ message: "ERROR", tag: "No se puede desbloquear", code: 401 });
+            }
+
             // Respuesta final
-            return res.status(201).json({ 
-                message: "ÉXITO",   
+            return res.status(201).json({
+                message: "ÉXITO",
                 code: 201
             });
-    
+
         } catch (error) {
             console.error("Error en guardar:", error);
             return res.status(500).json({ message: "Error interno del servidor", code: 500 });
@@ -141,7 +151,7 @@ class RespuestaControl {
         try {
             const id_persona = req.params.persona;
 
-            const personaA = await axios.get(AUTH_SERVICE_URL+`/persona/${id_persona}`);
+            const personaA = await axios.get(AUTH_SERVICE_URL + `/persona/${id_persona}`);
 
             if (!personaA) {
                 res.status(404).json({ message: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -149,7 +159,7 @@ class RespuestaControl {
 
             const lista = await inquietud.findAll({
                 where: { id_persona: personaA.data.data.id },
-                attributes: ['titulo','descripcion', 'imagen', 'video', 'estado', 'external_id'],
+                attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'],
                 include: [
                     { model: respuesta, as: 'respuestas', attributes: ["descripcion"] }
                 ]

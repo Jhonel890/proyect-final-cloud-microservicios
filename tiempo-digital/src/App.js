@@ -8,7 +8,8 @@ import MisSoluciones from './pages/misSoluciones/misSoluciones';
 import MisCoins from './pages/misCoins/misCoins';
 import CrearPregunta from './pages/crearPregunta/crearPregunta';
 import Perfil from './pages/perfil/perfil';
-import ResponderPregunta from './pages/responderPregunta/responderPregunta';
+import ResponderPreguntas from './pages/responderPreguntas/responderPreguntas';
+import ResponderPregunta from './pages/responderPregunta/[external_id]/responderPregunta';
 import MasDetalles from './pages/masDetalles/[external_id]/masDetalles';
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/misCoins" element={< MisCoins/>} />
         <Route path="/crearPregunta" element={< CrearPregunta/>} />
         <Route path="/perfil" element={< Perfil/>} />
+        <Route path="/responderPreguntas" element={< ResponderPreguntas/>} />
         <Route path="/responderPregunta/:external_id" element={< ResponderPregunta/>} />
         <Route path="/masDetalles/:external_id" element={< MasDetalles/>} />
 

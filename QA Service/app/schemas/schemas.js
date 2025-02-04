@@ -16,7 +16,7 @@ const respuestaSchema = zod.object({
     imagen: zod.string().nullable().optional(),
     video: zod.string().nullable().optional(),
     estado: zod.boolean().optional(),
-    inquietud: zod.string().uuid(),
+    inquietudId: zod.string().uuid(),
     persona: zod.string().uuid()
 });
 

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { postRespuestas } from "../../hooks/usePostRespuestas";
-import { useGetPregunta } from "../../hooks/useGetPreguntas";
-import { Alerta } from "../../utils/mensajes";
+import { postRespuestas } from "../../../hooks/usePostRespuestas";
+import { useGetPregunta } from "../../../hooks/useGetPreguntas";
+import { Alerta } from "../../../utils/mensajes";
 
-const Responder = () => {
+const ResponderPregunta = () => {
   const [respuesta, setRespuesta] = useState("");
   const navigate = useNavigate();
   const { external_id: inquietud } = useParams();
@@ -13,10 +13,10 @@ const Responder = () => {
   const { pregunta, isLoading } = useGetPregunta(inquietud);
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Agregado para prevenir el comportamiento por defecto del formulario
+    e.preventDefault();
 
     try {
-      const response = await postRespuestas({ descripcion: respuesta, inquietud });
+      const response = await postRespuestas({ descripcion: respuesta, inquietudId: inquietud });
 
       if (response.code === 201) {
         Alerta({
@@ -46,9 +46,9 @@ const Responder = () => {
         <h1 style={styles.sectionTitle}>Responder Pregunta</h1>
         <button
           style={styles.backButton}
-          onClick={() => navigate("/principal")}
+          onClick={() => navigate("/responderPreguntas")}
         >
-          Volver a Principal
+          Volver a Responder Preguntas
         </button>
       </div>
 
@@ -175,4 +175,4 @@ const styles = {
   },
 };
 
-export default Responder;
+export default ResponderPregunta;

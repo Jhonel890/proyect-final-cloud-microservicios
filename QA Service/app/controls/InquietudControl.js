@@ -98,18 +98,52 @@ class InquietudControl {
 
     async obtener(req, res) {
         try {
+            const respuestasResult = await respuesta.findOne({
+                where: {
+                    id_inquietud: req.params.external
+                },
+                attributes: ['descripcion', 'external_id'],
+            });
             const result = await inquietud.findOne({
                 where: {
                     external_id: req.params.external
                 },
                 attributes: ['titulo', 'descripcion', 'imagen', 'video', 'estado', 'external_id'],
-                include: { model: respuesta, as: 'respuestas', attributes: ['descripcion', 'external_id'] }
-            });
+            });            
             if (!result) {
                 res.status(404).json({ message: "ERROR", tag: "No encontrado", code: 404 });
-            } else {
-                res.status(200).json({ message: "EXITO", code: 200, data: result });
-            }
+            } 
+
+            let data = result.toJSON();
+
+            data.respuestas = respuestasResult ? [respuestasResult.toJSON()] : [];
+    
+            res.status(200).json({ message: "ÉXITO", code: 200, data });
+            
+        } catch (error) {
+            res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
+        }
+    }
+
+    async obtenerRespondidaPorPersona(req, res) {
+        try {
+            const result = await respuesta.findAll({
+                where: {
+                    external_persona: req.params.external
+                },
+                attributes: ['descripcion', 'imagen', 'video', 'estado', 'external_id'],
+                include: {
+                    model: inquietud,
+                    as: 'inquietud',
+                    attributes: ['titulo', 'descripcion', 'external_id']
+                }
+            });
+
+            if (!result || result.length === 0) {
+                return res.status(404).json({ message: "ERROR", tag: "No encontrado", code: 404 });
+            }           
+            
+            res.status(200).json({ message: "Éxito", code: 200, data: result });
         } catch (error) {
             res.status(500).json({ message: "Error interno del servidor", code: 500, error: error.message });
         }
@@ -181,13 +215,15 @@ class InquietudControl {
             });
 
             if (relacion) {
-                const inquietudesDesbloqueadas = relacion.id_inquietudes || [];
+                let inquietudesDesbloqueadas = JSON.parse(relacion.id_inquietudes || "[]");
+
+                // const inquietudesDesbloqueadas = relacion.id_inquietudes || [];
                 if (inquietudesDesbloqueadas.includes(inquietudA.external_id)) {
                     return res.status(200).json({ message: "Ya desbloqueaste esta pregunta", code: 200 });
                 }
 
                 inquietudesDesbloqueadas.push(inquietudA.external_id);
-                await relacion.update({ id_inquietudes: inquietudesDesbloqueadas });
+                await relacion.update({ id_inquietudes: JSON.stringify(inquietudesDesbloqueadas) });
             } else {
                 await cuenta_inquietud.create({
                     id_cuenta: cuentaA.external_id,

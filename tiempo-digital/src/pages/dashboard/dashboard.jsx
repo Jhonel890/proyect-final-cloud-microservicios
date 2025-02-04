@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import CompleteProfileModal from "../components/modalPerfil/modalPerfil";
 import useProfileCompletion from "../../hooks/useProfileCompletion";
 import "./styles.css";
-import useGetPreguntas from "../../hooks/useGetPreguntas";
 import useGetMisCoins from "../../hooks/useGetMisCoins";
 import useGetUser from "../../hooks/useGetUser";
 import { Alerta } from "../../utils/mensajes";
@@ -11,10 +10,13 @@ import usePutModificarMonedas from "../../hooks/usePutModificarMonedas";
 import { getExternalID } from "../../utils/auth";
 import usePostDesbloquearInquietud from "../../hooks/usePostDesbloquearInquietud";
 import useGetDesbloqueadas from "../../hooks/useGetDesbloqueadas";
+import useGetPreguntasRespondidas from "../../hooks/useGetPreguntas";
+import { useGetPreguntasRespondidasPorMi } from "../../hooks/useGetPreguntas";
+import ResponderPreguntas from "../responderPreguntas/responderPreguntas";
 
 const Dashboard = () => {
   const [refetchTrigger, setRefetchTrigger] = useState(false);
-  const preguntas = useGetPreguntas(refetchTrigger) || [];
+  const preguntas = useGetPreguntasRespondidas(refetchTrigger) || [];
   const { showModal, setShowModal, handleProfileSubmit } = useProfileCompletion(() => {
     setRefetchTrigger((prev) => !prev);
   });
@@ -28,6 +30,14 @@ const Dashboard = () => {
   const [desbloqueadasHoy, setDesbloqueadasHoy] = useState([]);
   const [desbloqueadasAntes, setDesbloqueadasAntes] = useState([]);
   const [desbloqueadas, setDesbloqueadas] = useState([]);
+  const [preguntasRespondidasPorMi, setPreguntasRespondidasPorMi] = useState([]);
+  const preguntasRPM = useGetPreguntasRespondidasPorMi(refetchTrigger) || [];
+
+  useEffect(() => {
+    if (preguntasRPM.length > 0) {
+      setPreguntasRespondidasPorMi(preguntasRPM);
+    }
+  }, [preguntasRPM, refetchTrigger]);
 
   useEffect(() => {
     async function FetchDesbloqueadas() {
@@ -35,7 +45,6 @@ const Dashboard = () => {
       setDesbloqueadas(data);
     }
     FetchDesbloqueadas();
-    // console.log("desbloqueadas", desbloqueadas);
   }, []);
 
   useEffect((() => {
@@ -122,6 +131,7 @@ const Dashboard = () => {
         <div style={styles.sidebarHeader}>TiempoDigital</div>
         <nav>
           <ul style={styles.navList}>
+            <li style={{ ...styles.navItem, ...styles.navItemHover }}><Link to="/responderPreguntas" style={{ textDecoration: 'none', color: 'inherit' }}>Responder Preguntas</Link></li>
             <li style={{ ...styles.navItem, ...styles.navItemHover }}><Link to="/misSoluciones" style={{ textDecoration: 'none', color: 'inherit' }}>Soluciones a mis preguntas</Link></li>
             <li style={{ ...styles.navItem, ...styles.navItemHover }}><Link to="/misCoins" style={{ textDecoration: 'none', color: 'inherit' }}>Mis Coins</Link></li>
             <li style={{ ...styles.navItem, ...styles.navItemHover }}><Link to="/crearPregunta" style={{ textDecoration: 'none', color: 'inherit' }}>Crear Pregunta</Link></li>
@@ -157,6 +167,35 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Sección: Preguntas que respondí */}
+        {preguntasRespondidasPorMi.length > 0 && (
+          <>
+            <h2 style={styles.subTitle}>Preguntas que Respondí</h2>
+            <div style={styles.gridContainer}>
+              {preguntasRespondidasPorMi.map((pregunta, index) => (
+                <div key={index} style={styles.card}>
+                  <div style={styles.cardContent}>
+                    <h2 style={styles.cardTitle}>{pregunta.inquietud.titulo}</h2>
+                    <p style={styles.cardDescription}>{pregunta.inquietud.descripcion}</p>
+                    <Link
+                      to={`/masDetalles/${pregunta.inquietud.external_id}`}
+                      style={{
+                        ...styles.outlineButton,
+                        textDecoration: 'none',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Ver Respuesta
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Sección: Preguntas desbloqueadas hoy */}
         {desbloqueadasHoy.length > 0 && (
@@ -195,11 +234,9 @@ const Dashboard = () => {
             <h2 style={styles.subTitle}>Preguntas Bloqueadas</h2>
             <div style={styles.gridContainer}>
               {preguntas
-                .filter(
-                  (pregunta) =>
-                    !desbloqueadas.some(
-                      (desbloqueada) => desbloqueada.external_id === pregunta.external_id
-                    )
+                .filter((pregunta) =>
+                  !desbloqueadas.some((desbloqueada) => desbloqueada.external_id === pregunta.external_id) &&
+                  !preguntasRespondidasPorMi.some((rpm) => rpm.external_id === pregunta.external_id)
                 )
                 .map((pregunta, index) => (
                   <div key={index} style={styles.card}>
@@ -214,21 +251,8 @@ const Dashboard = () => {
                       </button>
                     </div>
                   </div>
-                ))}
-              {/* {preguntas.map((pregunta, index) => (
-                <div key={index} style={styles.card}>
-                  <div style={styles.cardContent}>
-                    <h2 style={styles.cardTitle}>{pregunta.titulo}</h2>
-                    <p style={styles.cardDescription}>{pregunta.descripcion}</p>
-                    <button
-                      onClick={() => handleDesbloquearClick(pregunta)}
-                      style={styles.primaryButton}
-                    >
-                      Desbloquear
-                    </button>
-                  </div>
-                </div>
-              ))} */}
+                ))
+              }
             </div>
           </>
         )}
@@ -243,6 +267,18 @@ const Dashboard = () => {
                   <div style={styles.cardContent}>
                     <h2 style={styles.cardTitle}>{pregunta.titulo}</h2>
                     <p style={styles.cardDescription}>{pregunta.descripcion}</p>
+                    <Link
+                      to={`/masDetalles/${pregunta.external_id}`}
+                      style={{
+                        ...styles.outlineButton,
+                        textDecoration: 'none',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Más detalles
+                    </Link>
                   </div>
                 </div>
               ))}

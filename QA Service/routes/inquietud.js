@@ -12,6 +12,7 @@ router.post('/', inquietudControl.guardar);
 router.post('/desbloquear', inquietudControl.desbloquear);
 router.put('/:external', inquietudControl.modificar);
 router.get('/persona/:external', inquietudControl.inquietudesSegunPerfil);
+router.get('/respondidaPersona/:external', inquietudControl.obtenerRespondidaPorPersona);
 
 
 module.exports = router;

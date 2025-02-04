@@ -9,8 +9,8 @@ const MasDetalles = () => {
   const [respuestas, setRespuestas] = useState([]);
   const { pregunta, isLoading, error } = useGetPregunta(external_id);
 
-  useEffect(() => {    
-    if (pregunta) {      
+  useEffect(() => {
+    if (pregunta) {
       setRespuestas(pregunta.respuestas);
     }
   }, [pregunta]);
@@ -41,9 +41,15 @@ const MasDetalles = () => {
       {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.sectionTitle}>Más Detalles</h1>
-        <button style={styles.backButton} onClick={() => navigate('/principal')}>
-          Volver a Principal
-        </button>
+        {pregunta.estado === false ? (
+          <button style={styles.backButton} onClick={() => navigate('/principal')}>
+            Volver a Principal
+          </button>
+        ):(
+          <button style={styles.backButton} onClick={() => navigate('/responderPreguntas')}>
+            Volver a Responder Preguntas
+          </button>
+        )}
       </div>
 
       {/* Pregunta */}

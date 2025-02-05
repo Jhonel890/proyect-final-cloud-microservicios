@@ -40,6 +40,7 @@ const Detalles = ({ params }: any) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Detalles de la Pregunta</Text>
       {preguntaDetalles ? (
         <>
           <Respuesta></Respuesta>          

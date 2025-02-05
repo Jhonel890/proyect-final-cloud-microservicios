@@ -23,28 +23,29 @@ const Respuesta = () => {
             setLoading(false);
         };
 
-        const fetchRespuestas = async () => {
-            const dataPregunta = await getPreguntaDetalles(preguntaId);
-            const dataRespuestas = await getRespuestas();
+        // const fetchRespuestas = async () => {
+        //     const dataPregunta = await getPreguntaDetalles(preguntaId);
+        //     const dataRespuestas = await getRespuestas();
 
-            const dataUtil = dataRespuestas.data.filter(respuesta =>
-                respuesta.inquietud.titulo === dataPregunta.data.titulo
-            );
-            console.log(dataUtil);
-            setRespuestas(dataUtil);
-            setLoading(false);
-        };
+        //     const dataUtil = dataRespuestas.data.filter((respuesta) =>
+        //         respuesta.inquietud.titulo === dataPregunta.data.titulo
+        //     );
+        //     console.log(dataUtil);
+        //     setRespuestas(dataUtil);
+        //     setLoading(false);
+        // };
 
         fetchDetalles();
-        fetchRespuestas();
+        // fetchRespuestas();
     }, [preguntaId]);
 
     const handleSubmit = async () => {
-        try {
+        // try {
             const personaId = await AsyncStorage.getItem("personaId");
 
-            const response = await postRespuesta({ descripcion: respuesta, inquietud: preguntaId, persona: personaId });
-
+            const response = await postRespuesta({ descripcion: respuesta, inquietudId: preguntaId, persona: personaId });
+            console.log("response:", response);
+             
             if (response.code === 201) {
                 Alert.alert("Comentario agregado", "Todo correcto", [
                     { text: "Aceptar", onPress: () => router.push("/preguntas") },
@@ -52,10 +53,10 @@ const Respuesta = () => {
             } else {
                 throw new Error("Error en la respuesta del servidor");
             }
-        } catch (error) {
-            console.error("Error en handleSubmit:", error);
-            Alert.alert("Error", "Ups! algo salió mal", [{ text: "Aceptar" }]);
-        }
+        // } catch (error) {
+        //     console.error("Error en handleSubmit:", error);
+        //     Alert.alert("Error", "Ups! algo salió mal", [{ text: "Aceptar" }]);
+        // }
     };
 
     return (
@@ -104,7 +105,7 @@ const Respuesta = () => {
                 </View>
             </View>
 
-            <View style={styles.container}>
+            {/* <View style={styles.container}>
                 <Text style={styles.sectionTitle}>Respuestas Brindadas</Text>
                 
                 <FlatList
@@ -117,7 +118,7 @@ const Respuesta = () => {
                         </View>
                     )}
                 />
-            </View>
+            </View> */}
         </View>
     );
 };

@@ -136,93 +136,64 @@
 //     </Drawer>
 //   );
 // }
-import { Tabs } from "expo-router";
-import { useState, useCallback } from "react";
-import { useRouter, useFocusEffect } from "expo-router";
-import { Alert } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { logout } from "./constants/authService";
+
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { useState, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { Alert, View, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logout } from './constants/authService';
+import PreguntasScreen from './preguntas'; 
+import HacerPreguntaScreen from './hacer-pregunta'; 
+import LoginScreen from './login'; 
+import RespuestaScreen from './respuesta/[preguntaId]';
+
+const Drawer = createDrawerNavigator();
+
+function CustomDrawerContent({ router }) {
+    return (
+        <View style={{ flex: 1, paddingTop: 50, backgroundColor: '#f3f4f6' }}>
+            <TouchableOpacity onPress={() => router.push('/preguntas')} style={{ padding: 15 }}>
+                <Text style={{ fontSize: 16 }}>Preguntas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/hacer-pregunta')} style={{ padding: 15 }}>
+                <Text style={{ fontSize: 16 }}>Hacer Pregunta</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={async () => {
+                await logout();
+                await AsyncStorage.removeItem('userToken');
+                Alert.alert('Sesión cerrada', 'Has cerrado sesión correctamente.');
+                router.replace('/login');
+            }} style={{ padding: 15 }}>
+                <Text style={{ fontSize: 16 }}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+        </View>
+    );
+}
 
 export default function Layout() {
-    const [token, setToken] = useState<string | null>(null); 
+    const [token, setToken] = useState<string | null>(null);
     const router = useRouter();
 
-    // Se ejecuta cada vez que el usuario vuelve a la pantalla
     useFocusEffect(
         useCallback(() => {
             const obtenerToken = async () => {
-                const tokenA = await AsyncStorage.getItem("userToken");
-                setToken(tokenA); // Se actualiza el estado correctamente
+                const tokenA = await AsyncStorage.getItem('userToken');
+                setToken(tokenA);
             };
             obtenerToken();
         }, [])
     );
 
-    // Función de logout
-    const handleLogout = async () => {
-        await logout();
-        await AsyncStorage.removeItem("userToken"); // Eliminar el token almacenado
-        setToken(null);
-        Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
-        router.replace("/login");
-    };
-
     return (
-        <Tabs>
-            {token && (
-                <Tabs.Screen
-                    name="preguntas"
-                    options={{
-                        title: "Preguntas",
-                        tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="list" size={size} color={color} />
-                        ),
-                    }}
-                />
-            )}
-            {token && (
-                <Tabs.Screen
-                    name="hacer-pregunta"
-                    options={{
-                        title: "Hacer Pregunta",
-                        tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="add-circle-outline" size={size} color={color} />
-                        ),
-                    }}
-                />
-            )}
-            {/* {token && (
-                <Tabs.Screen
-                    name="mis-respuestas"
-                    options={{
-                        title: "Mis Respuestas",
-                        tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="chatbubbles-outline" size={size} color={color} />
-                        ),
-                    }}
-                />
-            )} */}
-            {token && (
-                <Tabs.Screen
-                    name="login"
-                    options={{
-                        title: "Logout",
-                        tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="log-out-outline" size={size} color={color} />
-                        ),
-                    }}
-                    listeners={{ focus: handleLogout }}
-                />
-            )}
-            {!token && (
-                <Tabs.Screen
-                    name="login"
-                    options={{ title: "Iniciar Sesión" }}
-                />
-            )}
-        </Tabs>
+        <Drawer.Navigator drawerContent={() => <CustomDrawerContent router={router} /> }>
+            <Drawer.Screen name="login" component={LoginScreen} />
+            <Drawer.Screen name="preguntas" component={PreguntasScreen} />
+            {token && <Drawer.Screen name="hacer-pregunta" component={HacerPreguntaScreen} />}
+            {token && <Drawer.Screen name="respuesta/[preguntaId]" component={RespuestaScreen} />}
+            {/* {token && <Drawer.Screen name="hacer-pregunta" component={HacerPreguntaScreen} />} */}
+        </Drawer.Navigator>
     );
 }
-
 
